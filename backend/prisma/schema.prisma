@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Jogador {
+  id         Int         @id @default(autoincrement())
+  nome       String
+  email      String      @unique
+  telefone   String
+  tipo       TipoJogador
+  valorBase  Float?      // valor opcional, pode ser definido depois
+  pagamentos Pagamento[]
+}
+
+model Pagamento {
+  id         Int      @id @default(autoincrement())
+  jogadorId  Int
+  valor      Float
+  mes        Int   // exemplo: "2025-09"
+  ano        Int   // exemplo: "2025"
+  pago       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  jogador    Jogador  @relation(fields: [jogadorId], references: [id])
+}
+
+enum TipoJogador {
+  MENSALISTA
+  AVULSO
+}
