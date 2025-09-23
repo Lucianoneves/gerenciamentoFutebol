@@ -2,43 +2,39 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Registrar pagamento inicial
+// Registrar pagamento inicial (valor 0)
 export const registrarPagamento = async (req, res) => {
   try {
     const { jogadorId } = req.body;
 
+    // Verifica se o jogador existe
     const jogador = await prisma.jogador.findUnique({ where: { id: jogadorId } });
     if (!jogador) return res.status(404).json({ erro: "Jogador não encontrado" });
 
     const now = new Date();
     const mes = now.getMonth() + 1;
     const ano = now.getFullYear();
+    const dia = now.getDate();
 
-    let valor = 0;
-    let pago = false;
+    // Verifica se já existe pagamento para o mesmo dia
+    const existente = await prisma.pagamento.findFirst({ where: { jogadorId, mes, ano, dia } });
+    if (existente) return res.status(400).json({ erro: "Pagamento já registrado para este dia" });
 
-    if (jogador.tipo === "MENSALISTA") {
-      valor = 40;
-      const existente = await prisma.pagamento.findFirst({ where: { jogadorId, mes, ano } });
-      if (existente) return res.status(400).json({ erro: "Pagamento mensalista deste mês já registrado" });
-      pago = false; // Agora só marcar como pago se efetivamente receber os 40 reais
-    } else if (jogador.tipo === "AVULSO") {
-      valor = 15;
-    }
-
+    // Cria pagamento com valor 0
     const pagamento = await prisma.pagamento.create({
-      data: { jogadorId, valor, mes, ano, pago },
-    });
-
-    const totalPago = await prisma.pagamento.aggregate({
-      _sum: { valor: true },
-      where: { jogadorId, mes, ano },
+      data: {
+        jogadorId,
+        valor: 0,
+        mes,
+        ano,
+        dia,
+        pago: false
+      },
     });
 
     res.json({
-      pagamento,
-      totalPagoMes: totalPago._sum.valor,
-      pago,
+      mensagem: "Pagamento registrado, aguardando pagamento efetivo",
+      pagamento
     });
 
   } catch (error) {
@@ -58,18 +54,19 @@ export const acrescentarPagamento = async (req, res) => {
     const now = new Date();
     const mes = now.getMonth() + 1;
     const ano = now.getFullYear();
+    const dia = now.getDate(); // Dia atual
 
     // Soma todos os pagamentos do mês
-    const pagamentos = await prisma.pagamento.findMany({ where: { jogadorId, mes, ano } });
+    const pagamentos = await prisma.pagamento.findMany({ where: { jogadorId, mes, ano, dia } });
     const totalAtual = pagamentos.reduce((acc, p) => acc + p.valor, 0) + valor;
 
     let pago = false;
     if (jogador.tipo === "MENSALISTA" && totalAtual >= 40) pago = true;
     if (jogador.tipo === "AVULSO" && totalAtual >= 60) pago = true;
 
-    // Adiciona o pagamento
+    // Cria novo pagamento com o valor enviado
     const pagamento = await prisma.pagamento.create({
-      data: { jogadorId, valor, mes, ano, pago },
+      data: { jogadorId, valor, mes, ano, pago, dia },
     });
 
     res.json({
@@ -85,43 +82,57 @@ export const acrescentarPagamento = async (req, res) => {
   }
 };
 
-// Listar todos os pagamentos
+// Listar todos os pagamentos com total
 export const listarPagamentos = async (req, res) => {
   try {
     const pagamentos = await prisma.pagamento.findMany({
       include: { jogador: true },
       orderBy: { id: "asc" },
     });
-    res.json(pagamentos);
+
+    // Total geral pago por cada jogador
+    const totalPagoPorJogador = {};
+    pagamentos.forEach(p => {
+      if (!totalPagoPorJogador[p.jogadorId]) totalPagoPorJogador[p.jogadorId] = 0;
+      totalPagoPorJogador[p.jogadorId] += p.valor;
+    });
+
+    res.json({ pagamentos, totalPagoPorJogador });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ erro: "Erro ao listar pagamentos" });
   }
 };
 
-
-// Deletar todos os pagamentos de um jogador
-export const deletarPagamentosJogador = async (req, res) => {
+export const deletarPagamentosPorMes = async (req, res) => {
   try {
     const jogadorId = parseInt(req.params.jogadorId);
+    const mes = parseInt(req.params.mes);
+    const dia = req.params.dia ? parseInt(req.params.dia) : null;
+    const valor = req.body.valor; // Valor opcional
 
-    if (isNaN(jogadorId)) {
-      return res.status(400).json({ erro: "ID do jogador inválido" });
+    if (isNaN(jogadorId) || isNaN(mes)) {
+      return res.status(400).json({ erro: "ID do jogador ou mês inválido" });
     }
 
     const jogador = await prisma.jogador.findUnique({ where: { id: jogadorId } });
-    if (!jogador) {
-      return res.status(404).json({ erro: "Jogador não encontrado" });
-    }
+    if (!jogador) return res.status(404).json({ erro: "Jogador não encontrado" });
 
-    // Deleta todos os pagamentos do jogador
-    await prisma.pagamento.deleteMany({ where: { jogadorId } });
+    // Monta o filtro dinamicamente
+    const whereClause = { jogadorId, mes };
+    if (dia !== null) whereClause.dia = dia;
+    if (valor !== undefined) whereClause.valor = valor;
+
+    const result = await prisma.pagamento.deleteMany({ where: whereClause });
 
     res.json({
-      mensagem: `Todos os pagamentos do jogador ${jogador.nome} foram removidos`,
+      mensagem: `${result.count} pagamentos do jogador ${jogador.nome} ${dia ? `no dia ${dia}/${mes}` : `no mês ${mes}`}${valor ? ` com valor ${valor}` : ""} foram removidos`,
     });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ erro: "Erro ao deletar pagamentos", detalhe: error.message });
   }
 };
+

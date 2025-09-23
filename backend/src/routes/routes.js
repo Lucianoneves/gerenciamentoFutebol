@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { criarJogador,atualizarJogador, listarJogadores, deletarJogador } from "../controllers/jogadorController.js";     
-import { registrarPagamento, listarPagamentos, acrescentarPagamento,deletarPagamentosJogador } from "../controllers/pagamentoController.js"; 
+import { registrarPagamento, listarPagamentos, acrescentarPagamento, deletarPagamentosPorMes } from "../controllers/pagamentoController.js"; 
 
 
        
@@ -23,7 +23,15 @@ router.post("/pagamentos/:id", registrarPagamento); // registra pagamento do jog
 router.get("/pagamentos", listarPagamentos);       // lista todos pagamentos
 router.put("/pagamentos", acrescentarPagamento);      // Acrescentar pagamento
 
-router.delete("/pagamentos/:id", deletarPagamentosJogador);// Deletar pagamento // Deletar pagamento pelo ID 
+
+
+
+
+// Deletar todos os pagamentos de um jogador (pela query string)
+router.delete("/pagamentos/:jogadorId/mes/:mes/dia/:dia", deletarPagamentosPorMes);
+
+
+
 
 
 

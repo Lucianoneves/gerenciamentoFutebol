@@ -23,6 +23,7 @@ model Pagamento {
   valor      Float
   mes        Int   // exemplo: "2025-09"
   ano        Int   // exemplo: "2025"
+  dia        Int?   // exemplo: "15"
   pago       Boolean  @default(false)
   createdAt  DateTime @default(now())
 
