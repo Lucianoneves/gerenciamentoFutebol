@@ -2,6 +2,8 @@ import { Router } from "express";
 import { criarJogador,atualizarJogador, listarJogadores, deletarJogador } from "../controllers/jogadorController.js";     
 import { registrarPagamento, listarPagamentos, acrescentarPagamento, deletarPagamentosPorMes } from "../controllers/pagamentoController.js"; 
 
+import { resumoChurrasco, registrarDespesa } from "../controllers/churrascoController.js";
+
 
        
 
@@ -29,6 +31,15 @@ router.put("/pagamentos", acrescentarPagamento);      // Acrescentar pagamento
 
 // Deletar todos os pagamentos de um jogador (pela query string)
 router.delete("/pagamentos/:jogadorId/mes/:mes/dia/:dia", deletarPagamentosPorMes);
+
+
+
+// Churrasco
+router.get("/churrasco/resumo", resumoChurrasco);   // mostra total arrecadado, despesas e saldo
+router.post("/churrasco/despesa", registrarDespesa); // cadastra uma despesa
+
+
+
 
 
 

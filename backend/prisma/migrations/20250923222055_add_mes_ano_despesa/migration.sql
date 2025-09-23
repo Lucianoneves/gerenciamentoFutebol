@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `despesa` ADD COLUMN `ano` INTEGER NULL,
+    ADD COLUMN `mes` INTEGER NULL;

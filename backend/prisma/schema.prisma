@@ -34,3 +34,15 @@ enum TipoJogador {
   MENSALISTA
   AVULSO
 }
+
+
+model Despesa {
+  id        Int      @id @default(autoincrement())
+  descricao String
+  valor     Float
+  mes       Int?      // <-- deixei opcional
+  ano       Int?      // <-- deixei opcional
+  createdAt DateTime @default(now())
+}
+
+
