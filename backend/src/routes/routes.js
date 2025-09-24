@@ -1,4 +1,10 @@
 import { Router } from "express";
+
+
+// Importar as novas funções do adminController
+import { registrarAdmin, loginAdmin } from "../controllers/adminController.js";
+
+
 import { criarJogador,atualizarJogador, listarJogadores, deletarJogador } from "../controllers/jogadorController.js";     
 import { registrarPagamento, listarPagamentos, acrescentarPagamento, deletarPagamentosPorMes } from "../controllers/pagamentoController.js"; 
 
@@ -12,7 +18,14 @@ import { resumoChurrasco, registrarDespesa } from "../controllers/churrascoContr
 
 const router = Router();
 
-// Jogadores
+
+// Rotas de Admin
+router.post("/admin/registrar", registrarAdmin);
+router.post("/admin/login", loginAdmin);
+
+
+
+
 // Jogadores
 router.post("/jogadores", criarJogador);       // Criar jogador
 router.get("/jogadores", listarJogadores);     // Listar jogadores
