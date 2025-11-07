@@ -2,9 +2,10 @@ import Constants from "expo-constants";
 import { API_URL } from "@env";
 import { getToken } from "./auth";
 
-const BASE_URL: string = API_URL || (Constants?.expoConfig?.extra as any)?.apiBaseUrl || "http://192.168.100.74/api";
+export const BASE_URL: string = API_URL || (Constants?.expoConfig?.extra as any)?.apiBaseUrl || "http://192.168.100.74/api";
 
 export type AdminLoginResponse = {
+  erro: string;
   mensagem: string;
   token: string;
 };
@@ -60,6 +61,33 @@ export async function createJogador(payload: {
   if (!res.ok) {
     const detail = await res.text();
     throw new Error(`Erro ao criar jogador: ${detail}`);
+  }
+  return res.json();
+}
+
+export async function updateJogador(
+  id: number,
+  payload: Partial<{ nome: string; email: string; telefone: string; tipo: "MENSALISTA" | "AVULSO" }>
+): Promise<{ mensagem: string; jogador: Jogador }> {
+  const res = await authorizedFetch(`${BASE_URL}/jogadores/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const detail = await res.text();
+    throw new Error(`Erro ao atualizar jogador: ${detail}`);
+  }
+  return res.json();
+}
+
+export async function deleteJogador(id: number): Promise<{ mensagem: string }> { // Delete jogador by ID
+  const res = await authorizedFetch(`${BASE_URL}/jogadores/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) {
+    const detail = await res.text();
+    throw new Error(`Erro ao deletar jogador: ${detail}`);
   }
   return res.json();
 }
@@ -162,3 +190,5 @@ export async function changePassword(currentPassword: string, newPassword: strin
   }
   return res.json();
 }
+
+export { getToken };

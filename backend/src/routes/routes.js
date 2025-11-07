@@ -2,7 +2,7 @@ import { Router } from "express";
 
 
 // Importar as novas funções do adminController
-import { registrarAdmin, loginAdmin } from "../controllers/adminController.js";
+import { registrarAdmin, loginAdmin, esqueciSenhaAdmin, alterarSenhaAdmin, resetarSenhaAdmin } from "../controllers/adminController.js";
 
 
 import { criarJogador,atualizarJogador, listarJogadores, deletarJogador } from "../controllers/jogadorController.js";     
@@ -22,6 +22,9 @@ const router = Router();
 // Rotas de Admin
 router.post("/admin/registrar", registrarAdmin);
 router.post("/admin/login", loginAdmin);
+router.post("/admin/esqueci-senha", esqueciSenhaAdmin);
+router.post("/admin/alterar-senha", alterarSenhaAdmin);
+router.post("/admin/resetar-senha", resetarSenhaAdmin);
 
 
 

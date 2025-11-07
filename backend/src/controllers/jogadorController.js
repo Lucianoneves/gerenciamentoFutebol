@@ -91,6 +91,7 @@ export const atualizarJogador = async (req, res) => {
 export const deletarJogador = async (req, res) => {
   try {
     const jogadorId = parseInt(req.params.id);
+    console.log("[deletarJogador] DELETE solicitado para jogadorId:", jogadorId);
 
     if (isNaN(jogadorId)) {
       return res.status(400).json({ error: "ID do jogador inválido" });
@@ -104,14 +105,15 @@ export const deletarJogador = async (req, res) => {
       return res.status(404).json({ error: "Jogador não encontrado" });
     }
 
-    await prisma.jogador.delete({
-      where: { id: jogadorId },
-    });
+    // Remover pagamentos vinculados antes de excluir o jogador para evitar erro de FK
+    // Mantido por segurança mesmo com onDelete: Cascade definido no schema
+    await prisma.pagamento.deleteMany({ where: { jogadorId } });
+
+    await prisma.jogador.delete({ where: { id: jogadorId } });
 
     res.json({ mensagem: "Jogador deletado com sucesso" });
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Erro ao deletar jogador", detalhe: error.message });
+    console.error("[deletarJogador] Erro:", error);
+    res.status(500).json({ error: "Erro ao deletar jogador", detalhe: error.message });
   }
 };
