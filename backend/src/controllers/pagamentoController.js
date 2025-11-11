@@ -136,3 +136,48 @@ export const deletarPagamentosPorMes = async (req, res) => {
   }
 };
 
+// Atualizar um pagamento (valor e/ou status 'pago')
+export const atualizarPagamento = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ erro: "ID do pagamento inválido" });
+    }
+
+    const { valor, pago } = req.body;
+    const dataAtualizacao = {};
+
+    if (valor !== undefined) {
+      const novoValor = parseFloat(valor);
+      if (isNaN(novoValor)) {
+        return res.status(400).json({ erro: "Valor inválido" });
+      }
+      dataAtualizacao.valor = novoValor;
+    }
+
+    if (pago !== undefined) {
+      dataAtualizacao.pago = !!pago;
+    }
+
+    if (Object.keys(dataAtualizacao).length === 0) {
+      return res.status(400).json({ erro: "Nada para atualizar. Envie 'valor' e/ou 'pago'." });
+    }
+
+    // Verifica se o pagamento existe
+    const existente = await prisma.pagamento.findUnique({ where: { id } });
+    if (!existente) {
+      return res.status(404).json({ erro: "Pagamento não encontrado" });
+    }
+
+    const atualizado = await prisma.pagamento.update({
+      where: { id },
+      data: dataAtualizacao,
+    });
+
+    return res.json({ mensagem: "Pagamento atualizado", pagamento: atualizado });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ erro: "Erro ao atualizar pagamento", detalhe: error.message });
+  }
+};
+

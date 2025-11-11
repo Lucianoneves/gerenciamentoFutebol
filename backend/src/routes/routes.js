@@ -5,13 +5,13 @@ import { Router } from "express";
 import { registrarAdmin, loginAdmin, esqueciSenhaAdmin, alterarSenhaAdmin, resetarSenhaAdmin } from "../controllers/adminController.js";
 
 
-import { criarJogador,atualizarJogador, listarJogadores, deletarJogador } from "../controllers/jogadorController.js";     
-import { registrarPagamento, listarPagamentos, acrescentarPagamento, deletarPagamentosPorMes } from "../controllers/pagamentoController.js"; 
+import { criarJogador, atualizarJogador, listarJogadores, deletarJogador } from "../controllers/jogadorController.js";
+import { registrarPagamento, listarPagamentos, acrescentarPagamento, deletarPagamentosPorMes, atualizarPagamento } from "../controllers/pagamentoController.js";
 
-import { resumoChurrasco, registrarDespesa } from "../controllers/churrascoController.js";
+import { resumoChurrasco, registrarDespesa, atualizarDespesa, deletarDespesa } from "../controllers/churrascoController.js";
 
 
-       
+
 
 
 
@@ -40,6 +40,7 @@ router.delete("/jogadores/:id", deletarJogador); // Deletar jogador
 router.post("/pagamentos/:id", registrarPagamento); // registra pagamento do jogador pelo ID
 router.get("/pagamentos", listarPagamentos);       // lista todos pagamentos
 router.put("/pagamentos", acrescentarPagamento);      // Acrescentar pagamento
+router.put("/pagamentos/:id", atualizarPagamento);    // Atualizar pagamento
 
 
 
@@ -53,6 +54,8 @@ router.delete("/pagamentos/:jogadorId/mes/:mes/dia/:dia", deletarPagamentosPorMe
 // Churrasco
 router.get("/churrasco/resumo", resumoChurrasco);   // mostra total arrecadado, despesas e saldo
 router.post("/churrasco/despesa", registrarDespesa); // cadastra uma despesa
+router.put("/churrasco/despesa/:id", atualizarDespesa); // atualizar despesa
+router.delete("/churrasco/despesa/:id", deletarDespesa); // deletar despesa
 
 
 

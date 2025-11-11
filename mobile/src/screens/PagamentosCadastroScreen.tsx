@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet, FlatList, Alert, TouchableOpacity, Switch } from "react-native";
 import { addPagamento, getPagamentos, getJogadores, Pagamento, Jogador, updatePagamento } from "../services/api";
 
-export default function PagamentosScreen() {
+export default function PagamentosCadastroScreen() {
   const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
   const [jogadores, setJogadores] = useState<Jogador[]>([]);
   const [buscaNome, setBuscaNome] = useState<string>("");
@@ -12,9 +12,6 @@ export default function PagamentosScreen() {
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [editValor, setEditValor] = useState<string>("");
   const [editPago, setEditPago] = useState<boolean>(false);
-  const agora = new Date();
-  const [mesSel, setMesSel] = useState<number>(agora.getMonth() + 1);
-  const [anoSel, setAnoSel] = useState<number>(agora.getFullYear());
 
   const carregar = async () => {
     try {
@@ -45,21 +42,6 @@ export default function PagamentosScreen() {
     return jogadores.filter(j => j.nome.toLowerCase().includes(q));
   }, [buscaNome, jogadores]);
 
-  const nomeMes = (m: number) => [
-    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-  ][m - 1] || `${m}`;
-
-  const mesesDisponiveis = useMemo(() => {
-    const set = new Set<string>();
-    pagamentos.forEach(p => set.add(`${p.mes}-${p.ano}`));
-    const arr = Array.from(set).map(key => {
-      const [m, a] = key.split("-");
-      return { mes: parseInt(m), ano: parseInt(a) };
-    }).sort((x, y) => x.ano === y.ano ? x.mes - y.mes : x.ano - y.ano);
-    return arr;
-  }, [pagamentos]);
-
   const acrescentar = async () => {
     try {
       const id = parseInt(jogadorId);
@@ -86,7 +68,7 @@ export default function PagamentosScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Pagamentos</Text>
+      <Text style={styles.title}>Pagamentos — Cadastro e Edição</Text>
       <View style={styles.form}>
         <Text style={styles.formTitle}>Registrar Pagamento</Text>
         <TextInput
@@ -117,86 +99,6 @@ export default function PagamentosScreen() {
         <Button title="Registrar Pagamento" onPress={acrescentar} />
       </View>
 
-      {/* Relatório do mês atual */}
-      <View style={styles.relatorio}>
-        <Text style={styles.relatorioTitle}>Relatório por mês</Text>
-        <View style={styles.mesSelector}>
-          <TouchableOpacity
-            style={styles.btnMes}
-            onPress={() => {
-              const novoMes = mesSel - 1;
-              if (novoMes < 1) { setMesSel(12); setAnoSel(anoSel - 1); }
-              else setMesSel(novoMes);
-            }}
-          >
-            <Text style={styles.btnText}>Anterior</Text>
-          </TouchableOpacity>
-          <Text style={styles.mesLabel}>{nomeMes(mesSel)} / {anoSel}</Text>
-          <TouchableOpacity
-            style={styles.btnMes}
-            onPress={() => {
-              const novoMes = mesSel + 1;
-              if (novoMes > 12) { setMesSel(1); setAnoSel(anoSel + 1); }
-              else setMesSel(novoMes);
-            }}
-          >
-            <Text style={styles.btnText}>Próximo</Text>
-          </TouchableOpacity>
-        </View>
-        {mesesDisponiveis.length > 0 ? (
-          <View style={styles.mesesChips}>
-            {mesesDisponiveis.map(({ mes, ano }) => {
-              const active = mes === mesSel && ano === anoSel;
-              return (
-                <TouchableOpacity key={`${mes}-${ano}`} style={[styles.chip, active && styles.chipActive]} onPress={() => { setMesSel(mes); setAnoSel(ano); }}>
-                  <Text style={active ? styles.chipTextActive : styles.chipText}>{nomeMes(mes)} {ano}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        ) : null}
-        {(() => {
-          const pagamentosMes = pagamentos.filter(p => p.mes === mesSel && p.ano === anoSel);
-          const totalPorJogadorMes = new Map<number, number>();
-          pagamentosMes.forEach(p => {
-            const atual = totalPorJogadorMes.get(p.jogadorId) || 0;
-            totalPorJogadorMes.set(p.jogadorId, atual + p.valor);
-          });
-          // Basear relatório exclusivamente no status editável 'pago' por mês
-          const pagosSet = new Set<number>();
-          pagamentosMes.forEach(p => { if (p.pago) pagosSet.add(p.jogadorId); });
-
-          const jogadoresPagaram = jogadores.filter(j => pagosSet.has(j.id));
-          const jogadoresPendentesMensalistas = jogadores.filter(j => j.tipo === "MENSALISTA" && !pagosSet.has(j.id));
-          const jogadoresPendentesAvulsos = jogadores.filter(j => j.tipo === "AVULSO" && !pagosSet.has(j.id));
-          return (
-            <View style={{ gap: 8 }}>
-              <Text style={styles.sectionTitle}>Pagaram ({jogadoresPagaram.length})</Text>
-              {jogadoresPagaram.length === 0 ? (
-                <Text style={styles.emptyText}>Nenhum pagamento registrado no mês selecionado.</Text>
-              ) : (
-                jogadoresPagaram.map(j => (
-                  <Text key={j.id} style={styles.itemLine}>
-                    • {j.nome} — R$ {totalPorJogadorMes.get(j.id) || 0}
-                  </Text>
-                ))
-              )}
-              <Text style={styles.sectionTitle}>Pendentes Mensalistas ({jogadoresPendentesMensalistas.length})</Text>
-              {jogadoresPendentesMensalistas.length === 0 ? (
-                <Text style={styles.emptyText}>Nenhum mensalista pendente.</Text>
-              ) : (
-                jogadoresPendentesMensalistas.map(j => <Text key={j.id} style={[styles.itemLine, styles.alertText]}>• {j.nome}</Text>)
-              )}
-              <Text style={styles.sectionTitle}>Pendentes Avulsos ({jogadoresPendentesAvulsos.length})</Text>
-              {jogadoresPendentesAvulsos.length === 0 ? (
-                <Text style={styles.emptyText}>Nenhum avulso pendente.</Text>
-              ) : (
-                jogadoresPendentesAvulsos.map(j => <Text key={j.id} style={[styles.itemLine, styles.alertText]}>• {j.nome}</Text>)
-              )}
-            </View>
-          );
-        })()}
-      </View>
       <FlatList
         data={pagamentos}
         keyExtractor={(item) => String(item.id)}
@@ -287,20 +189,7 @@ const styles = StyleSheet.create({
   sugestaoItem: { paddingVertical: 6, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: "#ddd" },
   btnLimparSel: { backgroundColor: "#6c757d", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 4 },
   btnText: { color: "#fff", fontSize: 12, fontWeight: "600" },
-  relatorio: { padding: 12, borderWidth: StyleSheet.hairlineWidth, borderColor: "#ddd", borderRadius: 8, marginBottom: 16 },
-  relatorioTitle: { fontSize: 16, fontWeight: "600", marginBottom: 8 },
-  mesSelector: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 },
-  mesLabel: { fontWeight: "600" },
-  btnMes: { backgroundColor: "#6c757d", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 4 },
-  sectionTitle: { fontWeight: "600" },
-  emptyText: { color: "#555" },
-  itemLine: { color: "#333" },
   alertText: { color: "#c1121f", fontWeight: "600" },
-  mesesChips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 8 },
-  chip: { borderWidth: StyleSheet.hairlineWidth, borderColor: "#aaa", borderRadius: 16, paddingHorizontal: 10, paddingVertical: 4 },
-  chipActive: { backgroundColor: "#007bff", borderColor: "#007bff" },
-  chipText: { color: "#333" },
-  chipTextActive: { color: "#fff", fontWeight: "600" },
   item: { paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: "#ddd" },
   itemTitle: { fontWeight: "600" },
   editBox: { gap: 8, marginTop: 8 },

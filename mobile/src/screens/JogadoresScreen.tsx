@@ -5,7 +5,6 @@ import { createJogador, getJogadores, Jogador, updateJogador, deleteJogador } fr
 export default function JogadoresScreen() {
   const [jogadores, setJogadores] = useState<Jogador[]>([]);
   const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
   const [telefone, setTelefone] = useState("");
   const [tipo, setTipo] = useState<"MENSALISTA" | "AVULSO">("MENSALISTA");
   const [filtroTipo, setFiltroTipo] = useState<"TODOS" | "MENSALISTA" | "AVULSO">("TODOS");
@@ -27,14 +26,13 @@ export default function JogadoresScreen() {
 
   const criar = async () => {
     try {
-      if (!nome || !email || !telefone) {
-        Alert.alert("Campos obrigatórios", "Preencha nome, email e telefone");
+      if (!nome || !telefone) {
+        Alert.alert("Campos obrigatórios", "Preencha nome e telefone");
         return;
       }
-      const novo = await createJogador({ nome, email, telefone, tipo });
+      const novo = await createJogador({ nome, email: "", telefone, tipo });
       setJogadores((prev) => [...prev, novo]);
       setNome("");
-      setEmail("");
       setTelefone("");
       setTipo("MENSALISTA");
     } catch (e: any) {
@@ -44,15 +42,14 @@ export default function JogadoresScreen() {
 
   const editar = async (id: number) => {
     try {
-      if (!nome || !email || !telefone) {
-        Alert.alert("Campos obrigatórios", "Preencha nome, email e telefone");
+      if (!nome || !telefone) {
+        Alert.alert("Campos obrigatórios", "Preencha nome e telefone");
         return;
       }
-      const atualizado = await updateJogador(id, { nome, email, telefone, tipo });
+      const atualizado = await updateJogador(id, { nome, telefone, tipo });
       setJogadores((prev) => prev.map((j) => (j.id === id ? atualizado.jogador : j)));
       setEditandoId(null);
       setNome("");
-      setEmail("");
       setTelefone("");
       setTipo("MENSALISTA");
     } catch (e: any) {
@@ -111,7 +108,6 @@ export default function JogadoresScreen() {
   const iniciarEdicao = (jogador: Jogador) => {
     setEditandoId(jogador.id);
     setNome(jogador.nome);
-    setEmail(jogador.email);
     setTelefone(jogador.telefone);
     setTipo(jogador.tipo);
   };
@@ -119,7 +115,6 @@ export default function JogadoresScreen() {
   const cancelarEdicao = () => {
     setEditandoId(null);
     setNome("");
-    setEmail("");
     setTelefone("");
     setTipo("MENSALISTA");
   };
@@ -130,7 +125,6 @@ export default function JogadoresScreen() {
       <View style={styles.form}>
         <Text style={styles.formTitle}>{editandoId ? "Editar Jogador" : "Novo Jogador"}</Text>
         <TextInput style={styles.input} placeholder="Nome" value={nome} onChangeText={setNome} />
-        <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} />
         <TextInput style={styles.input} placeholder="Telefone" value={telefone} onChangeText={setTelefone} />
         <View style={{ flexDirection: "row", gap: 8 }}>
           <Button title="Mensalista" onPress={() => setTipo("MENSALISTA")} />
@@ -187,7 +181,7 @@ export default function JogadoresScreen() {
           <View style={styles.item}>
             <View style={styles.itemInfo}>
               <Text style={styles.itemTitle}>{item.nome}</Text>
-              <Text>{item.email} · {item.telefone}</Text>
+              <Text>{item.telefone}</Text>
               <Text>Tipo: {item.tipo}</Text>
             </View>
             <View style={styles.itemActions}>

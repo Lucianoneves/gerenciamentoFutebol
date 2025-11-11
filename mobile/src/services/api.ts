@@ -123,6 +123,22 @@ export async function addPagamento(payload: { jogadorId: number; valor: number }
   return res.json();
 }
 
+export async function updatePagamento(
+  id: number,
+  payload: Partial<{ valor: number; pago: boolean }>
+): Promise<any> {
+  const res = await authorizedFetch(`${BASE_URL}/pagamentos/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const detail = await res.text();
+    throw new Error(`Erro ao atualizar pagamento: ${detail}`);
+  }
+  return res.json();
+}
+
 // Churrasco
 export type ResumoChurrasco = {
   mes: number;
@@ -148,6 +164,30 @@ export async function addDespesa(payload: { descricao: string; valor: number }):
   if (!res.ok) {
     const detail = await res.text();
     throw new Error(`Erro ao registrar despesa: ${detail}`);
+  }
+  return res.json();
+}
+
+export async function updateDespesa(id: number, payload: Partial<{ descricao: string; valor: number }>): Promise<any> {
+  const res = await authorizedFetch(`${BASE_URL}/churrasco/despesa/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const detail = await res.text();
+    throw new Error(`Erro ao atualizar despesa: ${detail}`);
+  }
+  return res.json();
+}
+
+export async function deleteDespesa(id: number): Promise<any> {
+  const res = await authorizedFetch(`${BASE_URL}/churrasco/despesa/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) {
+    const detail = await res.text();
+    throw new Error(`Erro ao deletar despesa: ${detail}`);
   }
   return res.json();
 }
