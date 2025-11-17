@@ -106,6 +106,8 @@ export const listarPagamentos = async (req, res) => {
 };
 
 export const deletarPagamentosPorMes = async (req, res) => {
+  console.log("REQ BODY UPDATE →", req.body);
+
   try {
     const jogadorId = parseInt(req.params.jogadorId);
     const mes = parseInt(req.params.mes);
@@ -137,6 +139,7 @@ export const deletarPagamentosPorMes = async (req, res) => {
 };
 
 // Atualizar um pagamento (valor e/ou status 'pago')
+// Atualizar um pagamento (valor e/ou status 'pago')
 export const atualizarPagamento = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -147,6 +150,7 @@ export const atualizarPagamento = async (req, res) => {
     const { valor, pago } = req.body;
     const dataAtualizacao = {};
 
+    // Atualiza valor
     if (valor !== undefined) {
       const novoValor = parseFloat(valor);
       if (isNaN(novoValor)) {
@@ -155,13 +159,20 @@ export const atualizarPagamento = async (req, res) => {
       dataAtualizacao.valor = novoValor;
     }
 
+    // Atualiza status pago
     if (pago !== undefined) {
       dataAtualizacao.pago = !!pago;
     }
 
+    // Verifica se recebeu algo para atualizar
     if (Object.keys(dataAtualizacao).length === 0) {
-      return res.status(400).json({ erro: "Nada para atualizar. Envie 'valor' e/ou 'pago'." });
+      return res.status(400).json({
+        erro: "Nada para atualizar. Envie 'valor' e/ou 'pago'."
+      });
     }
+
+    // Adiciona data manual da atualização
+    dataAtualizacao.updatedAt = new Date();
 
     // Verifica se o pagamento existe
     const existente = await prisma.pagamento.findUnique({ where: { id } });
@@ -169,15 +180,22 @@ export const atualizarPagamento = async (req, res) => {
       return res.status(404).json({ erro: "Pagamento não encontrado" });
     }
 
+    // Atualiza no banco
     const atualizado = await prisma.pagamento.update({
       where: { id },
       data: dataAtualizacao,
     });
 
-    return res.json({ mensagem: "Pagamento atualizado", pagamento: atualizado });
+    return res.json({
+      mensagem: "Pagamento atualizado com sucesso",
+      pagamento: atualizado
+    });
+
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ erro: "Erro ao atualizar pagamento", detalhe: error.message });
+    return res.status(500).json({
+      erro: "Erro ao atualizar pagamento",
+      detalhe: error.message
+    });
   }
 };
-

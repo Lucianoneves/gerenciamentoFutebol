@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 
 // Criar jogador
 export const criarJogador = async (req, res) => {
-  const { nome, email, telefone, tipo } = req.body;
+  const { nome, telefone, tipo } = req.body;
 
   try {
     const tipoNormalizado = tipo?.toUpperCase();
@@ -15,7 +15,7 @@ export const criarJogador = async (req, res) => {
     }
 
     const jogador = await prisma.jogador.create({
-      data: { nome, email, telefone, tipo: tipoNormalizado },
+      data: { nome, telefone, tipo: tipoNormalizado },
     });
 
     res.json(jogador);
@@ -45,7 +45,7 @@ export const atualizarJogador = async (req, res) => {
       return res.status(400).json({ error: "ID do jogador inválido" });
     }
 
-    const { nome, email, telefone, tipo } = req.body;
+    const { nome,  telefone, tipo } = req.body;
 
     const jogadorExistente = await prisma.jogador.findUnique({
       where: { id: jogadorId },
@@ -68,8 +68,7 @@ export const atualizarJogador = async (req, res) => {
     const jogadorAtualizado = await prisma.jogador.update({
       where: { id: jogadorId },
       data: {
-        nome: nome ?? jogadorExistente.nome,
-        email: email ?? jogadorExistente.email,
+        nome: nome ?? jogadorExistente.nome,       
         telefone: telefone ?? jogadorExistente.telefone,
         tipo: tipoNormalizado,
       },

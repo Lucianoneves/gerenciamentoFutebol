@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "75d982c1-9486-495a-bd1f-0e010ee4d434"
+      }
+    },
+    "android": {
+      "package": "com.lucianon.futebol"
+    }
+  }
+}

@@ -2,7 +2,9 @@ import Constants from "expo-constants";
 import { API_URL } from "@env";
 import { getToken } from "./auth";
 
-export const BASE_URL: string = API_URL || (Constants?.expoConfig?.extra as any)?.apiBaseUrl || "http://192.168.100.74/api";
+export const BASE_URL: string = API_URL
+ || (Constants?.expoConfig?.extra as any)?.apiBaseUrl 
+ || (typeof window !== 'undefined' ? "http://localhost:3000/api" : "http://192.168.100.74:3000/api");
 
 export type AdminLoginResponse = {
   erro: string;
@@ -11,13 +13,21 @@ export type AdminLoginResponse = {
 };
 
 export async function loginAdmin(email: string, password: string): Promise<AdminLoginResponse> {
-  const res = await fetch(`${BASE_URL}/admin/login`, {
+  const url = `${BASE_URL}/admin/login`;
+  console.log('Fazendo requisição para:', url);
+  console.log('Dados:', { email, password });
+  
+  const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
+  
+  console.log('Resposta:', res.status, res.statusText);
+  
   if (!res.ok) {
     const detail = await res.text();
+    console.log('Erro detalhado:', detail);
     throw new Error(`Falha no login: ${res.status} ${detail}`);
   }
   return res.json();

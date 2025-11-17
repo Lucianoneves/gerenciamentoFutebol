@@ -4,7 +4,14 @@ import cors from "cors";
 import { router } from "./routes/routes.js";
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['http://localhost:3000', 'http://192.168.100.74:3000'] 
+    : true, // Em desenvolvimento, aceita qualquer origem
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 app.use("/api", router);

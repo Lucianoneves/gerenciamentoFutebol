@@ -120,7 +120,7 @@ export default function PagamentosRelatorioScreen() {
                 <Text style={styles.emptyText}>Nenhum pagamento registrado no mês selecionado.</Text>
               ) : (
                 jogadoresPagaram.map(j => (
-                  <Text key={j.id} style={styles.itemLine}>
+                  <Text key={j.id} style={[styles.itemLine, styles.successText]}>
                     • {j.nome} — R$ {totalPorJogadorMes.get(j.id) || 0}
                   </Text>
                 ))
@@ -158,6 +158,7 @@ const styles = StyleSheet.create({
   emptyText: { color: "#555" },
   itemLine: { color: "#333" },
   alertText: { color: "#c1121f", fontWeight: "600" },
+  successText: { color: "#28a745", fontWeight: "600" },
   mesesChips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 8 },
   chip: { borderWidth: StyleSheet.hairlineWidth, borderColor: "#aaa", borderRadius: 16, paddingHorizontal: 10, paddingVertical: 4 },
   chipActive: { backgroundColor: "#007bff", borderColor: "#007bff" },

@@ -92,6 +92,7 @@ export const atualizarDespesa = async (req, res) => {
 
 // Excluir uma despesa
 export const deletarDespesa = async (req, res) => {
+  console.log("Recebido DELETE para despesa ID:", req.params.id); // 👈 adicione aqui
   try {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ erro: "ID da despesa inválido" });

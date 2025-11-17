@@ -22,8 +22,7 @@ model Admin {
 
 model Jogador {
   id         Int         @id @default(autoincrement())
-  nome       String
-  email      String      @unique
+  nome       String  
   telefone   String
   tipo       TipoJogador
   valorBase  Float?      // valor opcional, pode ser definido depois
@@ -31,17 +30,19 @@ model Jogador {
 }
 
 model Pagamento {
-  id         Int      @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   jogadorId  Int
   valor      Float
-  mes        Int   // exemplo: "2025-09"
-  ano        Int   // exemplo: "2025"
-  dia        Int?   // exemplo: "15"
-  pago       Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  mes        Int
+  ano        Int
+  dia        Int?
+  pago       Boolean    @default(false)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt   // <-- ADICIONE ISTO
 
-  jogador    Jogador  @relation(fields: [jogadorId], references: [id], onDelete: Cascade)
+  jogador    Jogador    @relation(fields: [jogadorId], references: [id], onDelete: Cascade)
 }
+
 
 enum TipoJogador {
   MENSALISTA

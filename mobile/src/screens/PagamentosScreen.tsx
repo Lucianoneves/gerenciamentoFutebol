@@ -64,7 +64,7 @@ export default function PagamentosScreen() {
     try {
       const id = parseInt(jogadorId);
       const v = (() => {
-        const t = (valor || "").trim().replace(",", ".");
+        const t = (valor || "").trim().replace(/,/g, ".");
         if (t === "") return NaN;
         const n = Number(t);
         return n;
@@ -176,7 +176,7 @@ export default function PagamentosScreen() {
                 <Text style={styles.emptyText}>Nenhum pagamento registrado no mês selecionado.</Text>
               ) : (
                 jogadoresPagaram.map(j => (
-                  <Text key={j.id} style={styles.itemLine}>
+                  <Text key={j.id} style={[styles.itemLine, styles.successText]}>
                     • {j.nome} — R$ {totalPorJogadorMes.get(j.id) || 0}
                   </Text>
                 ))
@@ -203,7 +203,7 @@ export default function PagamentosScreen() {
         renderItem={({ item }) => (
           <View style={styles.item}>
             <Text style={styles.itemTitle}>#{item.id} · Jogador {item.jogadorId}</Text>
-            <Text style={!item.pago ? styles.alertText : undefined}>R$ {item.valor} — {item.dia}/{item.mes}/{item.ano} · {item.pago ? "Pago" : "Em aberto"}</Text>
+            <Text style={item.pago ? styles.successText : styles.alertText}>R$ {Number(item.valor).toFixed(2)} — {item.dia}/{item.mes}/{item.ano} · {item.pago ? "Pago" : "Em aberto"}</Text>
             {item.jogador ? <Text>{item.jogador.nome}</Text> : null}
             {editandoId === item.id ? (
               <View style={styles.editBox}>
@@ -224,15 +224,31 @@ export default function PagamentosScreen() {
                     onPress={async () => {
                       try {
                         const novoValor = (() => {
-                          const t = (editValor || "").trim().replace(",", ".");
+                          const t = (editValor || "").trim().replace(/,/g, ".");
                           if (t === "") return NaN;
                           const n = Number(t);
                           return n;
                         })();
-                        const payload: any = {};
-                        if (!isNaN(novoValor)) payload.valor = novoValor;
-                        payload.pago = editPago;
+                        const agora = new Date();
+                        
+
+                        const payload: any = {
+                          pago: editPago,
+                          dia: agora.getDate(),
+                          mes: agora.getMonth() + 1,
+                          ano: agora.getFullYear(),
+                        };
+                        
+
+                        if (!isNaN(novoValor)) {
+                          payload.valor = novoValor;
+                        }
+                        
+
                         await updatePagamento(item.id, payload);
+                     
+
+
                         setEditandoId(null);
                         setEditValor("");
                         setEditPago(false);
@@ -296,6 +312,7 @@ const styles = StyleSheet.create({
   emptyText: { color: "#555" },
   itemLine: { color: "#333" },
   alertText: { color: "#c1121f", fontWeight: "600" },
+  successText: { color: "#28a745", fontWeight: "600" },
   mesesChips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 8 },
   chip: { borderWidth: StyleSheet.hairlineWidth, borderColor: "#aaa", borderRadius: 16, paddingHorizontal: 10, paddingVertical: 4 },
   chipActive: { backgroundColor: "#007bff", borderColor: "#007bff" },

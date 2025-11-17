@@ -30,7 +30,10 @@ export default function JogadoresScreen() {
         Alert.alert("Campos obrigatórios", "Preencha nome e telefone");
         return;
       }
-      const novo = await createJogador({ nome, email: "", telefone, tipo });
+      const novo = await createJogador({
+        nome, telefone, tipo,
+        email: ""
+      });
       setJogadores((prev) => [...prev, novo]);
       setNome("");
       setTelefone("");

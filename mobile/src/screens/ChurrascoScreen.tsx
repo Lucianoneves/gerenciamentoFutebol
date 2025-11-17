@@ -87,9 +87,30 @@ export default function ChurrascoScreen() {
       {resumo && (
         <View style={styles.card}>
           <Text>Mês/Ano: {resumo.mes}/{resumo.ano}</Text>
-          <Text>Total arrecadado: R$ {resumo.totalArrecadado.toFixed(2)}</Text>
-          <Text>Total despesas: R$ {resumo.totalDespesas.toFixed(2)}</Text>
-          <Text>Saldo final: R$ {resumo.saldoFinal.toFixed(2)}</Text>
+
+          {/* Total arrecadado: Negrito */}
+          <Text style={{ fontWeight: 'bold' }}>
+            Total arrecadado: R$ {resumo.totalArrecadado.toFixed(2)}
+          </Text>
+
+          {/* Total despesas: Vermelho */}
+          <Text style={{ color: 'red' }}>
+            Total despesas: R$ {resumo.totalDespesas.toFixed(2)}
+          </Text>
+
+          {/* Saldo final: Cor condicional (verde, preto ou vermelho) */}
+          <Text
+            style={{
+              color:
+                resumo.saldoFinal > 0
+                  ? 'green' // Positivo
+                  : resumo.saldoFinal === 0
+                    ? 'black' // Zero
+                    : 'red', // Negativo
+            }}
+          >
+            Saldo final: R$ {resumo.saldoFinal.toFixed(2)}
+          </Text>
         </View>
       )}
 

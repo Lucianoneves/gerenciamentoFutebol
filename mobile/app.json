@@ -12,22 +12,24 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "ios": {
-      "supportsTablet": true
-    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "usesCleartextTraffic": true,
+      "package": "com.anonymous.mobile"
+    },
+    "ios": {
+      "supportsTablet": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "apiBaseUrl": "http://localhost:3000/api"
+      "apiBaseUrl": "http://192.168.100.74:3000/api"
     }
   }
 }
