@@ -14,20 +14,13 @@ export type AdminLoginResponse = {
 
 export async function loginAdmin(email: string, password: string): Promise<AdminLoginResponse> {
   const url = `${BASE_URL}/admin/login`;
-  console.log('Fazendo requisição para:', url);
-  console.log('Dados:', { email, password });
-  
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
-  
-  console.log('Resposta:', res.status, res.statusText);
-  
   if (!res.ok) {
     const detail = await res.text();
-    console.log('Erro detalhado:', detail);
     throw new Error(`Falha no login: ${res.status} ${detail}`);
   }
   return res.json();
@@ -115,49 +108,82 @@ export type Pagamento = {
 };
 
 export async function getPagamentos(): Promise<{ pagamentos: Pagamento[]; totalPagoPorJogador: Record<number, number> }> {
-  const res = await authorizedFetch(`${BASE_URL}/pagamentos`);
-  if (!res.ok) throw new Error("Erro ao listar pagamentos");
-  return res.json();
+  const res = await authorizedFetch(`${BASE_URL}/pagamentos`);
+  if (!res.ok) throw new Error("Erro ao listar pagamentos");
+  return res.json();
 }
 
-export async function addPagamento(payload: { jogadorId: number; valor: number }): Promise<any> {
+// --- Pagamentos ---
+
+export async function addPagamento(payload: {
+  jogadorId: number;
+  valor: number;
+}): Promise<any> {
   const res = await authorizedFetch(`${BASE_URL}/pagamentos`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
+
   if (!res.ok) {
-    const detail = await res.text();
+    const detail = await safeErrorDetail(res);
     throw new Error(`Erro ao acrescentar pagamento: ${detail}`);
   }
+
   return res.json();
 }
 
 export async function updatePagamento(
   id: number,
-  payload: Partial<{ valor: number; pago: boolean }>
+  payload: Partial<{
+    valor: number;
+    pago: boolean;
+    dia: number;
+    mes: number;
+    ano: number;
+  }>
 ): Promise<any> {
   const res = await authorizedFetch(`${BASE_URL}/pagamentos/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
+
   if (!res.ok) {
-    const detail = await res.text();
+    const detail = await safeErrorDetail(res);
     throw new Error(`Erro ao atualizar pagamento: ${detail}`);
   }
+
   return res.json();
 }
 
-// Churrasco
+// Função util para garantir mensagem de erro sempre legível
+async function safeErrorDetail(res: Response): Promise<string> {
+  try {
+    const text = await res.text();
+    return text || res.statusText || "Erro desconhecido";
+  } catch {
+    return res.statusText || "Erro desconhecido";
+  }
+}
+
+
+// --- Churrasco ---
 export type ResumoChurrasco = {
   mes: number;
   ano: number;
   totalArrecadado: number;
-  despesas: { id: number; descricao: string; valor: number; mes: number; ano: number }[];
+  despesas: {
+    id: number;
+    descricao: string;
+    valor: number;
+    mes: number;
+    ano: number;
+  }[];
   totalDespesas: number;
   saldoFinal: number;
 };
+
 
 export async function getResumoChurrasco(): Promise<ResumoChurrasco> {
   const res = await authorizedFetch(`${BASE_URL}/churrasco/resumo`);
@@ -215,18 +241,6 @@ export async function registrarAdmin(payload: { name: string; email: string; pas
   return res.json();
 }
 
-export async function forgotPassword(email: string): Promise<{ mensagem: string }> {
-  const res = await fetch(`${BASE_URL}/admin/esqueci-senha`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
-  });
-  if (!res.ok) {
-    const detail = await res.text();
-    throw new Error(`Erro ao solicitar recuperação: ${detail}`);
-  }
-  return res.json();
-}
 
 export async function changePassword(currentPassword: string, newPassword: string): Promise<{ mensagem: string }> {
   const res = await authorizedFetch(`${BASE_URL}/admin/alterar-senha`, {

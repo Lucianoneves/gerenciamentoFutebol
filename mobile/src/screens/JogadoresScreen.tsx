@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet, FlatList, Alert, TouchableOpacity, Platform } from "react-native";
 import { createJogador, getJogadores, Jogador, updateJogador, deleteJogador } from "../services/api";
 
@@ -23,6 +23,16 @@ export default function JogadoresScreen() {
   useEffect(() => {
     carregar();
   }, []);
+
+  // 2. Use useMemo para criar a lista filtrada
+  const jogadoresFiltrados = useMemo(() => {
+    return jogadores.filter(j => {
+      // Se o filtro for "TODOS", retorna todos
+      if (filtroTipo === "TODOS") return true; 
+      // Se não, filtra pelo tipo
+      return j.tipo === filtroTipo; 
+    });
+  }, [jogadores, filtroTipo]); // **Dependências:** Só recalcula se 'jogadores' ou 'filtroTipo' mudarem.
 
   const criar = async () => {
     try {
@@ -125,6 +135,9 @@ export default function JogadoresScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Jogadores</Text>
+      <Text style={styles.contagemText}>
+        Total de jogadores: {jogadoresFiltrados.length}
+      </Text>
       <View style={styles.form}>
         <Text style={styles.formTitle}>{editandoId ? "Editar Jogador" : "Novo Jogador"}</Text>
         <TextInput style={styles.input} placeholder="Nome" value={nome} onChangeText={setNome} />
@@ -178,7 +191,7 @@ export default function JogadoresScreen() {
       })()}
 
       <FlatList
-        data={jogadores.filter(j => filtroTipo === "TODOS" || j.tipo === filtroTipo)}
+        data={jogadoresFiltrados} // Altera a fonte de dados
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
           <View style={styles.item}>
@@ -202,7 +215,7 @@ export default function JogadoresScreen() {
                   <TouchableOpacity style={styles.btnEditar} onPress={() => iniciarEdicao(item)}>
                     <Text style={styles.btnText}>Editar</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.btnRemover} onPress={() => remover(item.id)}>
+                  <TouchableOpacity style={styles.btnRemover} onPress={() => remover(item.id)}>  
                     <Text style={styles.btnText}>Remover</Text>
                   </TouchableOpacity>
                 </>

@@ -18,6 +18,7 @@ export default function HomeScreen({ navigation }: Props) {
       <Button title="Jogadores" onPress={() => navigation.navigate("Jogadores")} />
       <Button title="Pagamentos" onPress={() => navigation.navigate("Pagamentos")} />
       <Button title="Churrasco" onPress={() => navigation.navigate("Churrasco")} />   
+      <Button title="Alterar senha" onPress={() => navigation.navigate("ChangePassword")} />
       <Button title="Sair" color="#d9534f" onPress={async () => { await clearToken(); navigation.replace("Login" as any); }} />
     </View>
   );

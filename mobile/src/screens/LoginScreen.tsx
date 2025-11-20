@@ -15,7 +15,7 @@ import { setToken } from "../services/auth";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 
-const footballBackground = require('../../assets/ferroVelho.png'); // Certifique-se de que o caminho esteja correto
+const footballBackground = require('../../assets/splash-icon.png');
 
 type RootStackParamList = {
   Home: undefined;
@@ -30,6 +30,7 @@ export default function LoginScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const onLogin = async () => {
     setErrorMessage("");
@@ -42,8 +43,6 @@ export default function LoginScreen({ navigation }: Props) {
 
     try {
       setLoading(true);
-      console.log('Tentando login com email:', email);
-      console.log('URL da API:', `${BASE_URL}/admin/login`);
       const res = await loginAdmin(email, password);
 
       if (res.token) {
@@ -59,30 +58,20 @@ export default function LoginScreen({ navigation }: Props) {
         setErrorMessage(msg);
       }
     } catch (e: any) {
-      console.log("Erro no login:", e);
-      console.log("Tipo do erro:", typeof e);
-      console.log("Mensagem do erro:", e.message);
-      console.log("Stack do erro:", e.stack);
-      
-      if (e.response && e.response.data && e.response.data.erro) {
-        setErrorMessage(e.response.data.erro);
-      } else if (e.message) {
-        setErrorMessage(`Erro: ${e.message}`);
-      } else {
-        setErrorMessage("Falha ao tentar fazer login. Tente novamente.");
-      }
+      const msg = e?.message ? String(e.message) : "Falha ao tentar fazer login. Tente novamente.";
+      setErrorMessage(msg);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <ImageBackground 
-      source={footballBackground} 
+    <ImageBackground
+      source={footballBackground}
       style={styles.backgroundImage}
       resizeMode="cover"
     >
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
@@ -114,19 +103,28 @@ export default function LoginScreen({ navigation }: Props) {
                   style={styles.input}
                   placeholder="Senha"
                   placeholderTextColor="#BFC5CC"
-                  secureTextEntry
+                  secureTextEntry={!showPassword} // <-- aqui mostra ou esconde
                   value={password}
                   onChangeText={setPassword}
                 />
-                {password.length > 0 && (
-                  <Text style={styles.passwordDots}>{"•".repeat(Math.min(password.length, 3))}</Text>
-                )}
+
+                {/* Ícone de mostrar e esconder senha */}
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeButton}
+                >
+                  <Feather
+                    name={showPassword ? "eye-off" : "eye"}
+                    size={22}
+                    color="#666"
+                  />
+                </TouchableOpacity>
               </View>
 
               <TouchableOpacity
                 style={[styles.primaryButton, loading && styles.buttonDisabled]}
                 onPress={onLogin}
-                disabled={loading}
+                disabled={loading || !email || !password}
               >
                 <Text style={styles.primaryButtonText}>
                   {loading ? "Entrando..." : "Entrar"}
@@ -139,6 +137,8 @@ export default function LoginScreen({ navigation }: Props) {
               >
                 <Text style={styles.secondaryButtonText}>Criar conta</Text>
               </TouchableOpacity>
+
+              
             </View>
 
             {loading && (
@@ -172,6 +172,13 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
+  },
+  eyeButton: {
+    position: "absolute",
+    right: 20,
+    top: "50%",
+    transform: [{ translateY: -12 }],
+    padding: 4,
   },
   container: {
     flex: 1,
@@ -321,5 +328,11 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     flex: 1,
     fontWeight: '500',
+  },
+  linkButtonText: {
+    color: '#FFFFFF',
+    textDecorationLine: 'underline',
+    textAlign: 'center',
+    marginTop: 10,
   },
 });

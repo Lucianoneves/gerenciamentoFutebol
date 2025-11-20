@@ -2,6 +2,15 @@ import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet, FlatList, Alert, TouchableOpacity, Switch } from "react-native";
 import { addPagamento, getPagamentos, getJogadores, Pagamento, Jogador, updatePagamento } from "../services/api";
 
+// 1. MELHORIA DE UX: FUNÇÃO DE FORMATAÇÃO DE MOEDA
+const formatCurrency = (value: number): string => {
+  const numValue = Number(value) || 0;
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(numValue);
+};
+
 export default function PagamentosScreen() {
   const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
   const [jogadores, setJogadores] = useState<Jogador[]>([]);
@@ -60,6 +69,32 @@ export default function PagamentosScreen() {
     return arr;
   }, [pagamentos]);
 
+  // 2. MELHORIA DE PERFORMANCE: useMemo para o Relatório do Mês
+  const relatorioMes = useMemo(() => {
+    const pagamentosMes = pagamentos.filter(p => p.mes === mesSel && p.ano === anoSel);
+
+    const totalPorJogadorMes = new Map<number, number>();
+    pagamentosMes.forEach(p => {
+      const atual = totalPorJogadorMes.get(p.jogadorId) || 0;
+      totalPorJogadorMes.set(p.jogadorId, atual + p.valor);
+    });
+
+    // Basear relatório exclusivamente no status editável 'pago' por mês
+    const pagosSet = new Set<number>();
+    pagamentosMes.forEach(p => { if (p.pago) pagosSet.add(p.jogadorId); });
+
+    const jogadoresPagaram = jogadores.filter(j => pagosSet.has(j.id));
+    const jogadoresPendentesMensalistas = jogadores.filter(j => j.tipo === "MENSALISTA" && !pagosSet.has(j.id));
+    const jogadoresPendentesAvulsos = jogadores.filter(j => j.tipo === "AVULSO" && !pagosSet.has(j.id));
+
+    return {
+      jogadoresPagaram,
+      jogadoresPendentesMensalistas,
+      jogadoresPendentesAvulsos,
+      totalPorJogadorMes,
+    };
+  }, [pagamentos, jogadores, mesSel, anoSel]);
+
   const acrescentar = async () => {
     try {
       const id = parseInt(jogadorId);
@@ -113,11 +148,17 @@ export default function PagamentosScreen() {
             )}
           />
         )}
-        <TextInput style={styles.input} placeholder="Valor" value={valor} onChangeText={setValor} keyboardType="numeric" />
+        <TextInput
+          style={styles.input}
+          placeholder="Valor (Ex: 50.00)"
+          value={valor}
+          onChangeText={setValor}
+          keyboardType="numeric"
+        />
         <Button title="Registrar Pagamento" onPress={acrescentar} />
       </View>
 
-      {/* Relatório do mês atual */}
+      {/* Relatório do mês atual (usando useMemo) */}
       <View style={styles.relatorio}>
         <Text style={styles.relatorioTitle}>Relatório por mês</Text>
         <View style={styles.mesSelector}>
@@ -155,55 +196,44 @@ export default function PagamentosScreen() {
             })}
           </View>
         ) : null}
-        {(() => {
-          const pagamentosMes = pagamentos.filter(p => p.mes === mesSel && p.ano === anoSel);
-          const totalPorJogadorMes = new Map<number, number>();
-          pagamentosMes.forEach(p => {
-            const atual = totalPorJogadorMes.get(p.jogadorId) || 0;
-            totalPorJogadorMes.set(p.jogadorId, atual + p.valor);
-          });
-          // Basear relatório exclusivamente no status editável 'pago' por mês
-          const pagosSet = new Set<number>();
-          pagamentosMes.forEach(p => { if (p.pago) pagosSet.add(p.jogadorId); });
 
-          const jogadoresPagaram = jogadores.filter(j => pagosSet.has(j.id));
-          const jogadoresPendentesMensalistas = jogadores.filter(j => j.tipo === "MENSALISTA" && !pagosSet.has(j.id));
-          const jogadoresPendentesAvulsos = jogadores.filter(j => j.tipo === "AVULSO" && !pagosSet.has(j.id));
-          return (
-            <View style={{ gap: 8 }}>
-              <Text style={styles.sectionTitle}>Pagaram ({jogadoresPagaram.length})</Text>
-              {jogadoresPagaram.length === 0 ? (
-                <Text style={styles.emptyText}>Nenhum pagamento registrado no mês selecionado.</Text>
-              ) : (
-                jogadoresPagaram.map(j => (
-                  <Text key={j.id} style={[styles.itemLine, styles.successText]}>
-                    • {j.nome} — R$ {totalPorJogadorMes.get(j.id) || 0}
-                  </Text>
-                ))
-              )}
-              <Text style={styles.sectionTitle}>Pendentes Mensalistas ({jogadoresPendentesMensalistas.length})</Text>
-              {jogadoresPendentesMensalistas.length === 0 ? (
-                <Text style={styles.emptyText}>Nenhum mensalista pendente.</Text>
-              ) : (
-                jogadoresPendentesMensalistas.map(j => <Text key={j.id} style={[styles.itemLine, styles.alertText]}>• {j.nome}</Text>)
-              )}
-              <Text style={styles.sectionTitle}>Pendentes Avulsos ({jogadoresPendentesAvulsos.length})</Text>
-              {jogadoresPendentesAvulsos.length === 0 ? (
-                <Text style={styles.emptyText}>Nenhum avulso pendente.</Text>
-              ) : (
-                jogadoresPendentesAvulsos.map(j => <Text key={j.id} style={[styles.itemLine, styles.alertText]}>• {j.nome}</Text>)
-              )}
-            </View>
-          );
-        })()}
+        {/* Uso do resultado memoizado */}
+        <View style={{ gap: 8 }}>
+          <Text style={styles.sectionTitle}>Pagaram ({relatorioMes.jogadoresPagaram.length})</Text>
+          {relatorioMes.jogadoresPagaram.length === 0 ? (
+            <Text style={styles.emptyText}>Nenhum pagamento registrado no mês selecionado.</Text>
+          ) : (
+            relatorioMes.jogadoresPagaram.map(j => (
+              <Text key={j.id} style={[styles.itemLine, styles.successText]}>
+                • {j.nome} — **{formatCurrency(relatorioMes.totalPorJogadorMes.get(j.id) || 0)}**
+              </Text>
+            ))
+          )}
+          <Text style={styles.sectionTitle}>Pendentes Mensalistas ({relatorioMes.jogadoresPendentesMensalistas.length})</Text>
+          {relatorioMes.jogadoresPendentesMensalistas.length === 0 ? (
+            <Text style={styles.emptyText}>Nenhum mensalista pendente.</Text>
+          ) : (
+            relatorioMes.jogadoresPendentesMensalistas.map(j => <Text key={j.id} style={[styles.itemLine, styles.alertText]}>• {j.nome}</Text>)
+          )}
+          <Text style={styles.sectionTitle}>Pendentes Avulsos ({relatorioMes.jogadoresPendentesAvulsos.length})</Text>
+          {relatorioMes.jogadoresPendentesAvulsos.length === 0 ? (
+            <Text style={styles.emptyText}>Nenhum avulso pendente.</Text>
+          ) : (
+            relatorioMes.jogadoresPendentesAvulsos.map(j => <Text key={j.id} style={[styles.itemLine, styles.alertText]}>• {j.nome}</Text>)
+          )}
+        </View>
       </View>
+
       <FlatList
         data={pagamentos}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
           <View style={styles.item}>
             <Text style={styles.itemTitle}>#{item.id} · Jogador {item.jogadorId}</Text>
-            <Text style={item.pago ? styles.successText : styles.alertText}>R$ {Number(item.valor).toFixed(2)} — {item.dia}/{item.mes}/{item.ano} · {item.pago ? "Pago" : "Em aberto"}</Text>
+            {/* Aplicação da Formatação de Moeda e exibição de data formatada */}
+            <Text style={item.pago ? styles.successText : styles.alertText}>
+              **{formatCurrency(item.valor)}** — {item.dia}/{item.mes}/{item.ano} · {item.pago ? "Pago" : "Em aberto"}
+            </Text>
             {item.jogador ? <Text>{item.jogador.nome}</Text> : null}
             {editandoId === item.id ? (
               <View style={styles.editBox}>
@@ -229,25 +259,34 @@ export default function PagamentosScreen() {
                           const n = Number(t);
                           return n;
                         })();
+
+                        // 1. Obter a data atual
                         const agora = new Date();
-                        
+
+                        // 2. Definir a data inicial (a data original do pagamento)
+                        let dia = item.dia;
+                        let mes = item.mes;
+                        let ano = item.ano;
+
+                        // CORREÇÃO FINAL APLICADA: Atualiza a data APENAS se o pagamento está
+                        // sendo marcado como PAGO AGORA e ainda não estava pago.
+                        if (editPago && !item.pago) {
+                          dia = agora.getDate();
+                          mes = agora.getMonth() + 1; // +1 porque getMonth() é 0-indexado
+                          ano = agora.getFullYear();
+                        }
 
                         const payload: any = {
-                          pago: editPago,
-                          dia: agora.getDate(),
-                          mes: agora.getMonth() + 1,
-                          ano: agora.getFullYear(),
+                          pago: editPago
                         };
-                        
 
                         if (!isNaN(novoValor)) {
                           payload.valor = novoValor;
                         }
-                        
 
+
+                        // 6. Enviar a atualização
                         await updatePagamento(item.id, payload);
-                     
-
 
                         setEditandoId(null);
                         setEditValor("");

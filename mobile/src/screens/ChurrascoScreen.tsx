@@ -10,6 +10,15 @@ export default function ChurrascoScreen() {
   const [editDescricao, setEditDescricao] = useState("");
   const [editValor, setEditValor] = useState("");
 
+  // 1. Defina a função de formatação de moeda
+const formatCurrency = (value: number): string => {
+  // Use a API de internacionalização nativa do JavaScript
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL", // Assumindo Real Brasileiro
+  }).format(value);
+};
+
   const carregar = async () => {
     try {
       const data = await getResumoChurrasco();
@@ -144,7 +153,11 @@ export default function ChurrascoScreen() {
               <View style={styles.itemRow}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.itemTitle}>{item.descricao}</Text>
-                  <Text>R$ {item.valor.toFixed(2)}</Text>
+                  
+                
+                   
+                 <Text>{formatCurrency(item.valor)}</Text>
+                 
                 </View>
                 <View style={styles.actionsRow}>
                   <TouchableOpacity

@@ -3,7 +3,6 @@ import { NavigationContainer, LinkingOptions } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import LoginScreen from "../screens/LoginScreen";
 import RegisterAdminScreen from "../screens/RegisterAdminScreen";
-import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 import ChangePasswordScreen from "../screens/ChangePasswordScreen";
 import HomeScreen from "../screens/HomeScreen";
 import JogadoresScreen from "../screens/JogadoresScreen";
@@ -16,15 +15,15 @@ import { Button } from "react-native";
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
-  Forgot: undefined;
   Home: undefined;
   Jogadores: undefined;
   Pagamentos: undefined; // agora aponta para Cadastro/Edição
   PagamentosRelatorio: undefined;
   Churrasco: undefined;
+  ChangePassword: undefined;
 };
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const Stack: any = createNativeStackNavigator();
 
 export default function RootNavigator() {
   // Deep linking config to keep current screen on web refresh
@@ -34,7 +33,6 @@ export default function RootNavigator() {
       screens: {
         Login: "login",
         Register: "register",
-        Forgot: "forgot",
         Home: "",
         Jogadores: "jogadores",
         Pagamentos: "pagamentos",
@@ -62,7 +60,7 @@ export default function RootNavigator() {
     <NavigationContainer linking={linking}>
       <Stack.Navigator
         initialRouteName={initialRoute}
-        screenOptions={({ route, navigation }) => ({
+        screenOptions={({ route, navigation }: any) => ({
           // Botão Voltar fixo em todas as telas não raiz
           headerLeft: () => {
             if (route.name === "Home" || route.name === "Login") return undefined as any;
@@ -80,7 +78,6 @@ export default function RootNavigator() {
       >
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterAdminScreen} />
-        <Stack.Screen name="Forgot" component={ForgotPasswordScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="ChangePassword" component={ChangePasswordScreen as any} />
         <Stack.Screen
@@ -90,7 +87,7 @@ export default function RootNavigator() {
         <Stack.Screen
           name="Pagamentos"
           component={PagamentosCadastroScreen}
-          options={({ navigation }) => ({
+          options={({ navigation }: any) => ({
             headerRight: () => (
               <Button title="Relatório" onPress={() => navigation.navigate("PagamentosRelatorio")} />
             ),
@@ -99,7 +96,7 @@ export default function RootNavigator() {
         <Stack.Screen
           name="PagamentosRelatorio"
           component={PagamentosRelatorioScreen}
-          options={({ navigation }) => ({
+          options={({ navigation }: any) => ({
             headerRight: () => (
               <Button title="Cadastro" onPress={() => navigation.navigate("Pagamentos")} />
             ),

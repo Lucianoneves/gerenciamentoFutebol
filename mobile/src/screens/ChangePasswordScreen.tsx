@@ -21,7 +21,7 @@ export default function ChangePasswordScreen({ navigation }: Props) {
       Alert.alert("Sucesso", res.mensagem || "Senha alterada");
       navigation.goBack();
     } catch (e: any) {
-      Alert.alert("Erro", e.message || "Falha ao alterar senha");
+      Alert.alert("Erro", e.message || "Falha ao alterar senha");  
     } finally {
       setLoading(false);
     }
