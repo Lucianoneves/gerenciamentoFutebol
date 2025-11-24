@@ -14,6 +14,12 @@ import { loginAdmin, BASE_URL } from "../services/api";
 import { setToken } from "../services/auth";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
+import { z } from "zod";
+
+const schema = z.object({
+  email: z.string().email("Digite um E-mail válido").nonempty("E-mail é obrigatório"),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres").nonempty("Senha é obrigatória")
+});
 
 const footballBackground = require('../../assets/splash-icon.png');
 
@@ -24,20 +30,23 @@ type RootStackParamList = {
 
 type Props = NativeStackScreenProps<RootStackParamList, any>;
 
-export default function LoginScreen({ navigation }: Props) {
+export default function LoginScreen({ navigation,} : Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const passwordTooShort = password.length > 0 && password.length < 6;
 
   const onLogin = async () => {
     setErrorMessage("");
     setSuccessMessage("");
 
-    if (!email || !password) {
-      setErrorMessage("Preencha o e-mail e a senha.");
+    const parsed = schema.safeParse({ email: email.trim(), password });
+    if (!parsed.success) {
+      const first = parsed.error.errors[0];
+      setErrorMessage(first?.message || "Dados inválidos.");
       return;
     }
 
@@ -83,9 +92,9 @@ export default function LoginScreen({ navigation }: Props) {
               <Feather name="hexagon" size={30} color="#FFFFFF" style={styles.ballPattern} />
             </View>
 
-            <Text style={styles.title}> Admin Ferro_Velho</Text>
-
-            <View style={styles.formContainer}>
+            <Text style={styles.title}> Admin futebol</Text>
+ 
+            <View style={styles.formContainer}> 
               <View style={styles.inputContainer}>
                 <TextInput
                   style={styles.input}
@@ -119,6 +128,9 @@ export default function LoginScreen({ navigation }: Props) {
                     color="#666"
                   />
                 </TouchableOpacity>
+                {passwordTooShort ? (
+                  <Text style={styles.fieldError}>A senha deve ter pelo menos 6 caracteres</Text>
+                ) : null}
               </View>
 
               <TouchableOpacity
@@ -246,7 +258,7 @@ const styles = StyleSheet.create({
     color: '#666666',
   },
   primaryButton: {
-    backgroundColor: '#2E6FDB',
+    backgroundColor: '#1e7f3a',
     borderRadius: 25,
     paddingVertical: 14,
     paddingHorizontal: 30,
@@ -264,7 +276,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   secondaryButton: {
-    backgroundColor: '#9DA3A8',
+    backgroundColor: '#FFD700',
     borderRadius: 25,
     paddingVertical: 14,
     paddingHorizontal: 30,
@@ -328,6 +340,11 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     flex: 1,
     fontWeight: '500',
+  },
+  fieldError: {
+    color: '#b00020',
+    fontSize: 12,
+    marginTop: 6,
   },
   linkButtonText: {
     color: '#FFFFFF',

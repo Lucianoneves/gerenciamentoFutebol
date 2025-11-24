@@ -11,13 +11,13 @@ export default function ChurrascoScreen() {
   const [editValor, setEditValor] = useState("");
 
   // 1. Defina a função de formatação de moeda
-const formatCurrency = (value: number): string => {
-  // Use a API de internacionalização nativa do JavaScript
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL", // Assumindo Real Brasileiro
-  }).format(value);
-};
+  const formatCurrency = (value: number): string => {
+    // Use a API de internacionalização nativa do JavaScript
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL", // Assumindo Real Brasileiro
+    }).format(value);
+  };
 
   const carregar = async () => {
     try {
@@ -112,10 +112,11 @@ const formatCurrency = (value: number): string => {
             style={{
               color:
                 resumo.saldoFinal > 0
-                  ? 'green' // Positivo
+                  
+                  ? '#00c851' // Positivo
                   : resumo.saldoFinal === 0
                     ? 'black' // Zero
-                    : 'red', // Negativo
+                    : 'red' // Negativo
             }}
           >
             Saldo final: R$ {resumo.saldoFinal.toFixed(2)}
@@ -153,11 +154,11 @@ const formatCurrency = (value: number): string => {
               <View style={styles.itemRow}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.itemTitle}>{item.descricao}</Text>
-                  
-                
-                   
-                 <Text>{formatCurrency(item.valor)}</Text>
-                 
+
+
+
+                  <Text>{formatCurrency(item.valor)}</Text>
+
                 </View>
                 <View style={styles.actionsRow}>
                   <TouchableOpacity
@@ -181,19 +182,19 @@ const formatCurrency = (value: number): string => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
-  title: { fontSize: 20, fontWeight: "600", marginBottom: 12 },
-  subtitle: { fontSize: 16, fontWeight: "600", marginVertical: 8 },
-  card: { padding: 12, borderRadius: 8, backgroundColor: "#f4f4f4", marginBottom: 12 },
+  title: { fontSize: 20, fontWeight: "700", marginBottom: 12, color: "#FFFFFF" },
+  subtitle: { fontSize: 16, fontWeight: "700", marginVertical: 8, color: "#FFFFFF" },
+  card: { padding: 12, borderRadius: 8, backgroundColor: "#6d7570", marginBottom: 12, borderWidth: StyleSheet.hairlineWidth, borderColor: "#145a2e" },
   form: { gap: 8, marginBottom: 16 },
-  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10 },
-  item: { paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: "#ddd" },
+  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, backgroundColor: "#FFFFFF" },
+  item: { paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: "#323533" },
   itemRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   editRow: { gap: 8 },
-  itemTitle: { fontWeight: "600" },
+  itemTitle: { fontWeight: "700", color: "#FFFFFF" },
   actionsRow: { flexDirection: "row", gap: 8 },
-  btnEditar: { backgroundColor: "#0275d8", paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 },
-  btnRemover: { backgroundColor: "#d9534f", paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 },
-  btnSalvar: { backgroundColor: "#5cb85c", paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 },
-  btnCancelar: { backgroundColor: "#777", paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 },
-  btnText: { color: "#fff" }
+  btnEditar: { backgroundColor: "#6d7570", paddingVertical: 6, paddingHorizontal: 10, borderRadius: 8 },
+  btnRemover: { backgroundColor: "#d9534f", paddingVertical: 6, paddingHorizontal: 10, borderRadius: 8 },
+  btnSalvar: { backgroundColor: "#FFD700", paddingVertical: 6, paddingHorizontal: 10, borderRadius: 8 },
+  btnCancelar: { backgroundColor: "#2c2c2c", paddingVertical: 6, paddingHorizontal: 10, borderRadius: 8 },
+  btnText: { color: "#FFFFFF" }
 });

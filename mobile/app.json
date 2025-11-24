@@ -28,8 +28,8 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "extra": {
-      "apiBaseUrl": "http://192.168.100.74:3000/api"
+  "extra": {
+      "apiBaseUrl": "http://localhost:3000/api"
     }
   }
 }

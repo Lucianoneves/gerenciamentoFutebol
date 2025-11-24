@@ -2,9 +2,19 @@ import Constants from "expo-constants";
 import { API_URL } from "@env";
 import { getToken } from "./auth";
 
-export const BASE_URL: string = API_URL
- || (Constants?.expoConfig?.extra as any)?.apiBaseUrl 
- || (typeof window !== 'undefined' ? "http://localhost:3000/api" : "http://192.168.100.74:3000/api");
+function deriveLocalApiUrl(): string | null {
+  const hostUri = (Constants as any)?.expoConfig?.hostUri || (Constants as any)?.manifest?.debuggerHost;
+  if (typeof hostUri === 'string') {
+    const host = hostUri.split(':')[0];
+    if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) {
+      return `http://${host}:3000/api`;
+    }
+  }
+  return null;
+}
+
+export const BASE_URL: string = (API_URL || "").trim()
+ || (deriveLocalApiUrl() || (typeof window !== 'undefined' ? "http://localhost:3000/api" : "http://192.168.1.9:3000/api"));
 
 export type AdminLoginResponse = {
   erro: string;
@@ -14,11 +24,14 @@ export type AdminLoginResponse = {
 
 export async function loginAdmin(email: string, password: string): Promise<AdminLoginResponse> {
   const url = `${BASE_URL}/admin/login`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
+  const isLocalTunnel = BASE_URL.includes('loca.lt');
+  const headers = isLocalTunnel
+    ? { "Content-Type": "application/x-www-form-urlencoded" }
+    : { "Content-Type": "application/json" };
+  const body = isLocalTunnel
+    ? new URLSearchParams({ email, password }).toString()
+    : JSON.stringify({ email, password });
+  const res = await fetch(url, { method: "POST", headers, body });
   if (!res.ok) {
     const detail = await res.text();
     throw new Error(`Falha no login: ${res.status} ${detail}`);
@@ -40,6 +53,7 @@ async function authorizedFetch(url: string, init: RequestInit = {}) {
   const headers = {
     ...(init.headers || {}),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(BASE_URL.includes('loca.lt') ? { 'bypass-tunnel-reminder': '1' } : {}),
   } as Record<string, string>;
   return fetch(url, { ...init, headers });
 }

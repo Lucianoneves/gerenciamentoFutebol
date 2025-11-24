@@ -74,6 +74,10 @@ export default function RootNavigator() {
               />
             );
           },
+          headerStyle: { backgroundColor: "#6d7570"},
+          headerTintColor: "#FFFFFF",
+          headerTitleStyle: { color: "#FFFFFF" },
+          contentStyle: { backgroundColor: "#6d7570" },
         })}
       >
         <Stack.Screen name="Login" component={LoginScreen} />

@@ -93,3 +93,6 @@ router.delete("/churrasco/despesa/:id", ensureAuth, deletarDespesa);
 
 
 export { router };
+router.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
+});

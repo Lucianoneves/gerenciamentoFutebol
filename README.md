@@ -205,7 +205,7 @@ curl -X DELETE http://localhost:3000/api/pagamentos/1/mes/11/dia/15
 ### Churrasco
 Resumo do mês atual
 ```bash
-curl http://localhost:3000/api/churrasco/resumo
+curl http://localhost:3000/api/churrasco/resumo 
 ```
 
 Registrar despesa
@@ -264,4 +264,6 @@ As imagens abaixo são ilustrativas; substitua por screenshots reais conforme ne
 ## Boas Práticas
 - Nunca versionar `.env` com segredos.
 - Manter controllers coesos e serviços no mobile tipados (`mobile/src/services/api.ts`).
-- Usar `updatedAt` do Prisma para auditoria em `Pagamento` (`backend/prisma/schema.prisma:41`).
+- Usar `updatedAt` do Prisma para auditoria em `Pagamento` (`backend/prisma/schema prisma:41`).
+
+-Para rodar em  outra rede WIFI comando: npm run web:lan
