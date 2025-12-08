@@ -1,6 +1,12 @@
 // src/controllers/churrascoController.js
 import { PrismaClient } from "@prisma/client";
+import { v2 as cloudinary } from "../config/cloudinary.js";
 const prisma = new PrismaClient();
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 // Calcular total arrecadado e despesas do churrasco
 export const resumoChurrasco = async (req, res) => {
     try {

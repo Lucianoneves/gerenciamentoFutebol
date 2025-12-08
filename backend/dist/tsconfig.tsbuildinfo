@@ -1,1 +1,1 @@
-{"root":["../src/server.js","../src/controllers/admincontroller.js","../src/controllers/churrascocontroller.js","../src/controllers/jogadorcontroller.js","../src/controllers/pagamentocontroller.js","../src/routes/routes.js"],"version":"5.9.3"}
+{"root":["../src/server.js","../src/config/cloudinary.js","../src/controllers/admincontroller.js","../src/controllers/churrascocontroller.js","../src/controllers/jogadorcontroller.js","../src/controllers/pagamentocontroller.js","../src/routes/routes.js"],"version":"5.9.3"}

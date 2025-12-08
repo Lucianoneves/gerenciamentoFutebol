@@ -2,6 +2,8 @@ import 'dotenv/config';
 import express from "express";
 import cors from "cors";
 import { router } from "./routes/routes.js";
+import { cloudinary } from "./config/cloudinary.js";
+import fileUpload from "express-fileupload";
 
 const app = express();
 const CORS_ALLOW_ALL = process.env.CORS_ALLOW_ALL === 'true';
@@ -20,6 +22,9 @@ app.use(cors({ // Habilita CORS para todas as origens
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(fileUpload({
+ limit: { fileSize: 50 * 1024 * 1024 },
+}));
 
 app.use("/api", router);
 
