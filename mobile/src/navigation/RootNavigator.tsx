@@ -2,20 +2,21 @@ import React, { useEffect, useState } from "react";
 import { NavigationContainer, LinkingOptions } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import LoginScreen from "../screens/LoginScreen";
+import MenuScreen from "../screens/MenuScreen";
 import RegisterAdminScreen from "../screens/RegisterAdminScreen";
 import ChangePasswordScreen from "../screens/ChangePasswordScreen";
-import HomeScreen from "../screens/HomeScreen";
 import JogadoresScreen from "../screens/JogadoresScreen";
 import PagamentosCadastroScreen from "../screens/PagamentosCadastroScreen";
 import PagamentosRelatorioScreen from "../screens/PagamentosRelatorioScreen";
 import ChurrascoScreen from "../screens/ChurrascoScreen";
 import { getToken } from "../services/auth";
 import { Button } from "react-native";
+// Imagens/Cloudinary removidos
 
 export type RootStackParamList = {
   Login: undefined;
+  Menu: undefined;
   Register: undefined;
-  Home: undefined;
   Jogadores: undefined;
   Pagamentos: undefined; // agora aponta para Cadastro/Edição
   PagamentosRelatorio: undefined;
@@ -31,9 +32,9 @@ export default function RootNavigator() {
     prefixes: ["http://localhost", "http://localhost:19006"],
     config: {
       screens: {
-        Login: "login",
+        Login: "",
+        Menu: "menu",
         Register: "register",
-        Home: "",
         Jogadores: "jogadores",
         Pagamentos: "pagamentos",
         Churrasco: "churrasco",
@@ -45,16 +46,7 @@ export default function RootNavigator() {
     },
   };
 
-  const [initialRoute, setInitialRoute] = useState<keyof RootStackParamList | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      const token = await getToken();
-      setInitialRoute(token ? "Home" : "Login");
-    })();
-  }, []);
-
-  if (!initialRoute) return null;
+  const [initialRoute, setInitialRoute] = useState<keyof RootStackParamList | null>("Login");
 
   return (
     <NavigationContainer linking={linking}>
@@ -63,13 +55,13 @@ export default function RootNavigator() {
         screenOptions={({ route, navigation }: any) => ({
           // Botão Voltar fixo em todas as telas não raiz
           headerLeft: () => {
-            if (route.name === "Home" || route.name === "Login") return undefined as any;
+            if (route.name === "Login" || route.name === "Menu") return undefined as any;
             return (
               <Button
                 title="Voltar"
                 onPress={() => {
                   if (navigation.canGoBack()) navigation.goBack();
-                  else navigation.navigate("Home");
+                  else navigation.navigate("Menu");
                 }}
               />
             );
@@ -81,8 +73,8 @@ export default function RootNavigator() {
         })}
       >
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Menu" component={MenuScreen} />
         <Stack.Screen name="Register" component={RegisterAdminScreen} />
-        <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="ChangePassword" component={ChangePasswordScreen as any} />
         <Stack.Screen
           name="Jogadores"

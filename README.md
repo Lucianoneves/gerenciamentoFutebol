@@ -39,7 +39,7 @@ npm install
 npm run use:localhost   # usa mobile/.env.localhost (API local)
 # ou
 npm run use:device      # usa mobile/.env.device (domínio externo)
-
+```
 npm run start           # abre o Expo dev server
 npm run android         # compila/instala no emulador/dispositivo Android
 ```
@@ -54,6 +54,11 @@ Use `backend/.env.production:3-21` como referência:
 - `RESET_TOKEN_EXP_MINUTES`: validade do token de reset
 
 Nunca versionar segredos. Mantenha `.env` fora do controle de versão.
+
+#### Exemplo para PostgreSQL
+- Use o arquivo de exemplo `backend/.env.postgres.example` e ajuste `DATABASE_URL` no formato:
+  - `postgresql://USUARIO:SENHA@HOST:PORTA/NOME?schema=public`
+  - Ex.: `postgresql://postgres:senha@localhost:5432/futebol?schema=public`
 
 ### Mobile (`mobile/.env*`)
 - `API_URL`: base das APIs; lida em `mobile/src/services/api.ts:5-7`
@@ -72,6 +77,48 @@ npm run use:device     # mobile/.env.device
 - `Despesa`: `id,descricao,valor,mes,ano,createdAt` (`backend/prisma/schema.prisma:53-60`)
 
 Tipos: `TipoJogador = MENSALISTA | AVULSO` (`backend/prisma/schema.prisma:47-50`).
+
+## Migrar para PostgreSQL (Prisma)
+Você pode trocar de MySQL para PostgreSQL. Passos recomendados:
+
+- Banco e credenciais
+  - Crie o banco `futebol` no PostgreSQL e um usuário com permissões.
+  - Ajuste `backend/.env` (ou use `backend/.env.postgres.example`) com `DATABASE_URL` no formato do Postgres.
+
+- Alterar o provider do Prisma
+  - Em `backend/prisma/schema.prisma`, mude:
+    - `datasource db { provider = "postgresql" }`
+
+- Migrations
+  - Se você não precisa preservar dados, o caminho mais simples é iniciar migrations novas para Postgres:
+    - Apague a pasta `backend/prisma/migrations` e o `migration_lock.toml` (versionados).
+    - Rode: `npx prisma migrate dev --name init_postgres`
+  - Se precisa manter dados, migre antes (veja “Migração de dados”).
+
+- Gerar cliente e subir
+  - `npx prisma generate`
+  - `npm run dev`
+
+- Testar
+  - Acesse `http://localhost:3000/api/health` para validar o servidor.
+  - Use os `curl` acima para testar as rotas.
+
+### Migração de dados de MySQL para PostgreSQL
+Se já há dados no MySQL e você quer migrá-los:
+
+- Opção simplificada (sem ferramentas externas)
+  - Exporte os dados para CSV por tabela (MySQL) e importe no Postgres (via `COPY`/`psql`).
+
+- Opção automatizada
+  - Use `pgloader` (recomendado) para migrar estrutura e dados. Exemplo de comando:
+    - `pgloader mysql://user:senha@host:3306/futebol postgresql://postgres:senha@localhost:5432/futebol`
+  - No Windows, é mais fácil executar `pgloader` via Docker.
+
+- Após migração
+  - Ajuste `schema.prisma` para `postgresql` e rode `npx prisma db push` para alinhar o schema com o banco.
+  - Rode `npx prisma generate`.
+
+Observação: o app mobile não muda — as rotas e formatos de resposta continuam iguais.
 
 ## Autenticação
 - `POST /admin/login` retorna `token` (JWT) (`backend/src/controllers/adminController.js:61-67`).
@@ -266,4 +313,6 @@ As imagens abaixo são ilustrativas; substitua por screenshots reais conforme ne
 - Manter controllers coesos e serviços no mobile tipados (`mobile/src/services/api.ts`).
 - Usar `updatedAt` do Prisma para auditoria em `Pagamento` (`backend/prisma/schema prisma:41`).
 
--Para rodar em  outra rede WIFI comando: npm run web:lan
+-Para rodar em  outra rede Wifi comando: npm run web:lan
+
+  API externa: API_URL=http://192.168.1.6:3000/api

@@ -12,7 +12,11 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "docs:update": "node scripts/update-readme.js",
-    "docs:watch": "node scripts/update-readme.js --watch"
+    "docs:watch": "node scripts/update-readme.js --watch",
+    "dev": "node scripts/dev-all.js",
+    "dev:lan": "node scripts/dev-all.js --lan",
+    "dev:public": "node scripts/dev-all.js --public"
+  
   },
   "devDependencies": {
     "@types/react": "~19.1.10",

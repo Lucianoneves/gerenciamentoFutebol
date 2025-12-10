@@ -13,6 +13,7 @@ import {
 import { loginAdmin, BASE_URL } from "../services/api";
 import { setToken } from "../services/auth";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { RootStackParamList } from "../navigation/RootNavigator";
 import { Feather } from "@expo/vector-icons";
 import { z } from "zod";
 
@@ -23,12 +24,7 @@ const schema = z.object({
 
 const footballBackground = require('../../assets/splash-icon.png');
 
-type RootStackParamList = {
-  Home: undefined;
-  Register: undefined;
-};
-
-type Props = NativeStackScreenProps<RootStackParamList, any>;
+type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
 export default function LoginScreen({ navigation,} : Props) {
   const [email, setEmail] = useState("");
@@ -59,8 +55,9 @@ export default function LoginScreen({ navigation,} : Props) {
         setSuccessMessage(res.mensagem || "Login realizado com sucesso!");
         // Espera 1 segundo antes de redirecionar
         setTimeout(() => {
-          navigation.replace("Home");
-        }, 1000);
+          // Direcionar para o Menu principal após login
+          navigation.replace("Menu");
+        }, 3000);
       } else {
         const msg =
           res.erro || res.mensagem || "E-mail ou senha incorretos!";

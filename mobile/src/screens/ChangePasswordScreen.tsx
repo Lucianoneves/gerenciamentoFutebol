@@ -4,10 +4,10 @@ import { changePassword } from "../services/api";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 type RootStackParamList = {
-  Home: undefined;
+  Login: undefined;
 };
 
-type Props = NativeStackScreenProps<RootStackParamList, "Home">;
+type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
 export default function ChangePasswordScreen({ navigation }: Props) {
   const [currentPassword, setCurrentPassword] = useState("");
